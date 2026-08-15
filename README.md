@@ -5,18 +5,18 @@ Guía completa desde cero para configurar tesseract-screenshooter. Este procedim
 ## 1. Instalar las dependencias necesarias
 Abre tu terminal y ejecuta el siguiente comando para instalar el capturador de Xfce, el motor OCR con sus idiomas y la herramienta para gestionar el portapapeles:
 
-sudo apt update && sudo apt install xfce4-screenshooter tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa xclip
+```sudo apt update && sudo apt install xfce4-screenshooter tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa xclip```
 
 ## 2. Crear el script de automatización
 Vamos a crear un archivo de texto para el script en una ruta accesible del sistema.
 
    1. Abre el editor desde la terminal:
    
-   nano ~/.local/bin/shot-ocr
+   ```nano ~/.local/bin/shot-ocr```
    
    (Si la carpeta .local/bin no existe, el sistema la creará o puedes guardarlo directamente en tu carpeta de usuario como ~/shot-ocr.sh).
    2. Pega el siguiente código exacto dentro del archivo:
-   
+   ```
    #!/bin/bash# Crear un archivo temporal seguro para la imagen
    TMP=$(mktemp /tmp/screenshot_ocr.XXXXXX)
    # Lanzar el capturador de Xfce en modo región interactiva
@@ -36,11 +36,11 @@ Vamos a crear un archivo de texto para el script en una ruta accesible del siste
    
        # Limpieza absoluta de archivos temporales
        rm -f "$TMP.png" "$TMP" "$TMP.txt"fi
-   
+   ```
    3. Guarda los cambios presionando Ctrl + O, confirma con Enter y sal del editor con Ctrl + X.
    4. Concede permisos de ejecución al script para que el sistema pueda iniciarlo:
    
-   chmod +x ~/.local/bin/shot-ocr
+   ```chmod +x ~/.local/bin/shot-ocr```
    
    
 ## 3. Configurar el atajo de teclado en Xfce
@@ -51,7 +51,7 @@ Para vincular el script a la combinación de teclas exacta, sigue estos pasos en
    3. Haz clic en el botón Añadir (Add) en la parte inferior.
    4. En el campo "Comando", escribe la ruta absoluta de tu script:
    
-   /home/TU_USUARIO/.local/bin/shot-ocr
+   `/home/TU_USUARIO/.local/bin/shot-ocr`
    
    (Reemplaza TU_USUARIO por tu nombre de usuario real en el sistema. También puedes usar el botón de la carpeta para buscar el archivo manualmente).
    5. Haz clic en Aceptar.
