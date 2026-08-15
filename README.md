@@ -1,7 +1,7 @@
 # tesseract-screenshooter
-Captura de región de la pantalla, lectura de texto en inglés/castellano mediante OCR y copiado automático al portapapeles.
+Captura de región de la pantalla, lectura de texto en inglés/castellano mediante OCR y copiado automático al portapapeles usando tesseract y la utilidad de captura de pantalla nativa.
 ___
-Guía completa desde cero para configurar tesseract-screenshooter. Este procedimiento creará un sistema automatizado de captura de región, lectura de texto en inglés/castellano mediante OCR y copiado automático al portapapeles.
+Guía completa desde cero para configurar tesseract-screenshooter. Este procedimiento creará un sistema automatizado de captura de región, lectura de texto en inglés/castellano mediante OCR y copiado automático al portapapeles (guía para escritorio Xfce; en otros escritorios se puede instalar usando el instalador automático - LEER AL FINAL).
 ## 1. Instalar las dependencias necesarias
 Abre tu terminal y ejecuta el siguiente comando para instalar el capturador de Xfce, el motor OCR con sus idiomas y la herramienta para gestionar el portapapeles:
 
@@ -67,7 +67,7 @@ A partir de este momento, cada vez que presiones Ctrl + Shift + Impr Pant:
 
 ## Script de instalación automática (Xfce - Gnome - KDE)
 
-   1. Guardar el instalador: Descargar el archivo instalador_ocr.sh
+   1. Guardar el instalador: Descargar el archivo ***instalador_ocr.sh***
    
    2. Dar permisos de ejecución:
    
