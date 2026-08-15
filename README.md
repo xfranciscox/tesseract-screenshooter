@@ -63,3 +63,18 @@ A partir de este momento, cada vez que presiones Ctrl + Shift + Impr Pant:
    1. El cursor se transformará en una cruz.
    2. Selecciona cualquier zona de tu pantalla que contenga texto en inglés o castellano.
    3. Al soltar el clic, el texto se procesará y se guardará en tu memoria. Puedes pegarlo inmediatamente en cualquier documento o chat usando Ctrl + V.
+------------------------------
+
+## Script de instalación automática (Xfce - Gnome - KDE)
+
+   1. Guardar el instalador: Descargar el archivo instalador_ocr.sh
+   
+   2. Dar permisos de ejecución:
+   
+   `chmod +x instalador_ocr.sh`
+   
+   3. Ejecutar la instalación:
+   
+   `./instalador_ocr.sh`
+   
+   (Nota: El script solicitará tu contraseña de sudo al inicio únicamente para realizar la descarga de las librerías oficiales de Tesseract e xclip/wl-clipboard en caso de que falten en tu sistema).
