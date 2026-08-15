@@ -5,7 +5,6 @@
 # ==============================================================================
 echo "=== Paso 1: Verificando e instalando dependencias del sistema ==="
 
-# Identificar el gestor de paquetes de la distribución
 if command -v apt-get &> /dev/null; then
     PM="apt"
 elif command -v pacman &> /dev/null; then
@@ -17,18 +16,17 @@ else
     exit 1
 fi
 
-# Listas de paquetes requeridos según el gestor
 case "$PM" in
     "apt")
         sudo apt update
-        sudo apt install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa xclip wl-clipboard curl
+        sudo apt install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa xclip wl-clipboard
         ;;
     "pacman")
-        sudo pacman -Sy --needed --noconfirm tesseract tesseract-data-eng tesseract-data-spa xclip wl-clipboard curl
+        sudo pacman -Sy --needed --noconfirm tesseract tesseract-data-eng tesseract-data-spa xclip wl-clipboard
         ;;
     "dnf")
         sudo dnf check-update
-        sudo dnf install -y tesseract tesseract-langpack-eng tesseract-langpack-spa xclip wl-clipboard curl
+        sudo dnf install -y tesseract tesseract-langpack-eng tesseract-langpack-spa xclip wl-clipboard
         ;;
 esac
 
@@ -48,7 +46,6 @@ fi
 
 echo "Entorno detectado: $DESKTOP_ENV"
 
-# Configurar el comando de captura nativo y asegurar que la dependencia exista
 case "$DESKTOP_ENV" in
     "xfce")
         if [ "$PM" = "apt" ]; then sudo apt install -y xfce4-screenshooter; fi
@@ -63,7 +60,6 @@ case "$DESKTOP_ENV" in
         SCREENSHOT_CMD="spectacle -r -b -o \"\$TMP.png\""
         ;;
     "gnome")
-        # En GNOME moderno se interactúa mejor mediante la interfaz nativa de guardado
         SCREENSHOT_CMD="gnome-screenshot -r -f \"\$TMP.png\" 2>/dev/null || gnome-shell-extension-tool --help &>/dev/null && dbus-send --session --type=method_call --print-reply --dest=org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Screenshot.SelectArea string:\"\$TMP.png\""
         ;;
     *)
@@ -82,7 +78,6 @@ echo "=== Paso 3: Creando script de captura universal ==="
 
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/.local/share/applications"
-mkdir -p "$HOME/.local/share/icons"
 
 SCRIPT_PATH="$HOME/.local/bin/universal-ocr"
 
@@ -90,15 +85,12 @@ cat << EOF > "$SCRIPT_PATH"
 #!/bin/bash
 TMP=\$(mktemp /tmp/screenshot_ocr.XXXXXX)
 
-# Ejecutar captura nativa
 $SCREENSHOT_CMD
 
 if [ -f "\$TMP.png" ]; then
-    # OCR simultáneo (Inglés + Español)
     tesseract "\$TMP.png" "\$TMP" -l eng+spa 2>/dev/null
     
     if [ -f "\$TMP.txt" ] && [ -s "\$TMP.txt" ]; then
-        # Soporte para Wayland (wl-copy) o X11 (xclip)
         if [ "$XDG_SESSION_TYPE" = "wayland" ] && command -v wl-copy &> /dev/null; then
             cat "\$TMP.txt" | wl-copy
         else
@@ -113,15 +105,9 @@ EOF
 chmod +x "$SCRIPT_PATH"
 
 # ==============================================================================
-# 4. INSTALACIÓN DE ICONO Y LANZADOR .DESKTOP
+# 4. CREACIÓN DEL LANZADOR .DESKTOP CON ICONO NATIVO
 # ==============================================================================
-echo "=== Paso 4: Creando lanzador e icono de la aplicación ==="
-
-ICON_PATH="$HOME/.local/share/icons/universal-ocr-icon.svg"
-ICON_URL="https://githubusercontent.com"
-
-# Descargar icono oficial o crear un respaldo genérico si falla la red
-curl -s -L "$ICON_URL" -o "$ICON_PATH" || touch "$ICON_PATH"
+echo "=== Paso 4: Creando lanzador con icono del sistema ==="
 
 cat << EOF > "$HOME/.local/share/applications/universal-ocr.desktop"
 [Desktop Entry]
@@ -130,7 +116,7 @@ Type=Application
 Name=Captura OCR Universal
 Comment=Extrae texto de la pantalla (Inglés/Español)
 Exec=$SCRIPT_PATH
-Icon=$ICON_PATH
+Icon=applets-screenshooter
 Terminal=false
 Categories=Utility;Graphics;
 StartupNotify=true
@@ -145,31 +131,22 @@ xdg-desktop-menu forceupdate
 echo "=== Paso 5: Configurando atajo de teclado automático ==="
 
 SHORTCUT_NAME="Captura OCR Universal"
-SHORTCUT_KEY="<Primary><Shift>Print"  # Representación de Ctrl+Shift+Print
+SHORTCUT_KEY="<Primary><Shift>Print"
 
 case "$DESKTOP_ENV" in
     "xfce")
-        # Estructura de propiedades nativa de Xfconf
         xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Primary><Shift>Print" -n -t string -s "$SCRIPT_PATH"
         echo "Atajo registrado en XFCE."
         ;;
-        
     "gnome")
-        # Gestión nativa usando esquemas internos de dconf/gsettings
         PATH_BASE="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-        
-        # Obtener los atajos actuales para no sobrescribir otros existentes
         CURRENT_BINDINGS=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-        
-        # Generar una ruta única para este atajo
         NEW_PATH="${PATH_BASE}/custom_ocr/"
         
-        # Registrar los datos del comando
         gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$NEW_PATH name "$SHORTCUT_NAME"
         gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$NEW_PATH command "$SCRIPT_PATH"
         gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$NEW_PATH binding "$SHORTCUT_KEY"
         
-        # Añadir la nueva ruta al índice global de GNOME
         if [ "$CURRENT_BINDINGS" = "@as []" ] || [ "$CURRENT_BINDINGS" = "[]" ]; then
             gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['$NEW_PATH']"
         elif [[ "$CURRENT_BINDINGS" != *"$NEW_PATH"* ]]; then
@@ -178,27 +155,22 @@ case "$DESKTOP_ENV" in
         fi
         echo "Atajo registrado en GNOME."
         ;;
-        
     "kde")
-        # Inyección de atajos globales nativa en kglobalshortcutsrc mediante kwriteconfig6/5
         KWRITE_CMD="kwriteconfig6"
         command -v kwriteconfig6 &>/dev/null || KWRITE_CMD="kwriteconfig5"
         
         $KWRITE_CMD --file kglobalshortcutsrc --group "universal-ocr.desktop" --key "_k_custom_shortcut" "Ctrl+Shift+Print"
         $KWRITE_CMD --file kglobalshortcutsrc --group "universal-ocr.desktop" --key "_launch" "Ctrl+Shift+Print,none,Captura OCR Universal"
         
-        # Forzar recarga del demonio de atajos de KDE
         qdbus org.kde.kglobalaccel /kglobalaccel org.kde.kglobalaccel.reconfigure &>/dev/null
         echo "Atajo registrado en KDE Plasma."
         ;;
-        
     *)
-        echo "Aviso: No se pudo configurar el atajo automático para este entorno."
-        echo "Por favor, configúrelo manualmente apuntando al comando: $SCRIPT_PATH"
+        echo "Aviso: No se pudo configurar el atajo automático. Configúrelo manualmente hacia: $SCRIPT_PATH"
         ;;
 esac
 
 echo "=============================================================================="
 echo "¡PROCESO COMPLETADO!"
-echo "La aplicación ya está disponible en tu menú y el atajo [Ctrl+Shift+Impr Pant] activo."
+echo "Lanzador configurado para usar el icono nativo de capturas de pantalla de tu tema."
 echo "=============================================================================="
